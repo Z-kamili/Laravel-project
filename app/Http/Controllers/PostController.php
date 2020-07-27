@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Verification;
 use App\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\str;
 
 class PostController extends Controller
@@ -20,11 +22,13 @@ class PostController extends Controller
      */
     public function index()
     {
-        $post = Post::WithCount('coments')->get();
+        $post = Post::withCount('coments')->get();
         return view('posts.index',[
-            'posts' => $post
+            'posts' => $post,
+            'tab' => 'list'
         ]);
     }
+  
     /**
      * Show the form for creating a new resource.
      *
@@ -43,7 +47,7 @@ class PostController extends Controller
     public function store(Verification $request)
     {
     $data = $request->only(['title','content']);
-    $data['active'] = false;
+     $data["users_id"] = Auth::user()->id;
     $post = Post::create($data);
     $request->session()->flash('status','post was created!!');
     return redirect()->route('posts.index');
@@ -73,6 +77,9 @@ class PostController extends Controller
     public function edit($id)
     {
         $post = Post::findOrFail($id);
+        if(Gate::denies('post.update',$post)){
+            abort(403,"You can't edit this post");
+        }
         return view('posts.edit',[
             'post' =>$post
         ]);
@@ -87,7 +94,11 @@ class PostController extends Controller
      */
     public function update(Verification $request, $id)
     {
+
         $post = Post::findOrFail($id);
+        if(Gate::denies('post.update',$post)){
+            abort(403,"You can't edit this post");
+        }
         $post->title = $request->input('title');
         $post->content = $request->input('content');
         $post->save();
@@ -104,6 +115,7 @@ class PostController extends Controller
     public function destroy(Request $request, $id)
     {
         $post = Post::findOrFail($id);
+        $this->authorize("post.delete",$post);
         $post->delete();
         $request->session()->flash('status','post was created!!');
         return redirect()->route('posts.index');

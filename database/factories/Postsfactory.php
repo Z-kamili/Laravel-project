@@ -9,6 +9,6 @@ $factory->define(Post::class, function (Faker $faker) {
     return [
         'title' => $faker->realText(67),
         'content' => $faker->realText(67),
-        'active' => $faker->boolean
+        // 'active' => $faker->boolean
     ];
 });

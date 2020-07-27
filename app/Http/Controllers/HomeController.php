@@ -12,10 +12,7 @@ class HomeController extends Controller
      *
      * @return void
      */
-    public function __construct()
-    {
-        $this->middleware('auth')->only(['create','edit','update','destroy']);
-    }
+  
 
     /**
      * Show the application dashboard.
@@ -24,7 +21,6 @@ class HomeController extends Controller
      */
     public function index()
     {
-        // dd(Auth::id());
         return view('home');
     }
 }
